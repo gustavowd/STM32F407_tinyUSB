@@ -495,11 +495,14 @@ void microphoneTask(void const * argument)
   char filename[64];
 
   mic_init();
+
+  #if 0
   mic_start();
   while(1){
 	  uint32_t bytes_read = mic_read();
 	  vTaskDelay(1000);
   }
+  #endif
 
   if (f_mount(&SDFatFS, SDPath, 1) != FR_OK){
 	  vTaskSuspend(NULL);

@@ -11,7 +11,7 @@
 extern I2S_HandleTypeDef hi2s2;
 
 int32_t sampleBuffer[MIC_SAMPLES_PER_PACKET * 2];      // 7680 bytes (*2 because samples are 64 bit)
-int16_t processBuffer[MIC_SAMPLES_PER_PACKET];         // 1920 bytes
+int16_t processBuffer[MIC_SAMPLES_PER_PACKET >> 1];    // 960 bytes (because proccess each half 16 bits buffer)
 QueueHandle_t	  mic_read_queue;
 
 uint32_t mic_init(void){
