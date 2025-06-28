@@ -57,6 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define BUTTON_Pin GPIO_PIN_0
+#define BUTTON_GPIO_Port GPIOA
+#define SDCARD_DETECTION_Pin GPIO_PIN_6
+#define SDCARD_DETECTION_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
 
