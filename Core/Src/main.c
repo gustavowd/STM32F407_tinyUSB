@@ -46,6 +46,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_rx;
 
 SD_HandleTypeDef hsd;
 DMA_HandleTypeDef hdma_sdio_rx;
@@ -427,8 +428,12 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
   /* DMA2_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
@@ -488,6 +493,13 @@ void microphoneTask(void const * argument)
   /* USER CODE BEGIN 5 */
   uint32_t file_number = 0;
   char filename[64];
+
+  mic_init();
+  mic_start();
+  while(1){
+	  uint32_t bytes_read = mic_read();
+	  vTaskDelay(1000);
+  }
 
   if (f_mount(&SDFatFS, SDPath, 1) != FR_OK){
 	  vTaskSuspend(NULL);

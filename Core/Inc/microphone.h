@@ -69,5 +69,12 @@ typedef struct {
 
 void record_wav(char *filename, uint32_t rec_time);
 
+uint32_t mic_init(void);
+uint32_t mic_start(void);
+uint32_t mic_stop(void);
+uint32_t mic_pause(void);
+uint32_t mic_resume(void);
+uint32_t mic_read(void);
+
 
 #endif /* INC_MICROPHONE_H_ */
