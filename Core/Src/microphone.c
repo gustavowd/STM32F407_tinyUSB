@@ -53,9 +53,10 @@ uint32_t mic_read(void){
 	for (uint16_t i = 0; i < (MIC_SAMPLES_PER_PACKET / 2); i++) {
 		// dither the LSB with a random bit
 		//int16_t sample = (data_in[0] & 0xfffffffe) | (rand() & 1);
-		int16_t sample = (int16_t)*data_in;
+		int16_t sample = (int16_t)data_in[0];
 
 		*dest++ = sample;     // left channel has data
+		//*dest++ = sample;     // right channel is duplicated from the left
 		data_in += 2;
 		bytes_read += 2;
 	}
