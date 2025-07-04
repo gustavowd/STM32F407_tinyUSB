@@ -321,11 +321,81 @@ static BaseType_t prvTaskStatsCommand( char *pcWriteBuffer,
     }
 }
 
+
+FRESULT res;
+DIR dir;
+FILINFO fno;
+static BaseType_t prvLSCommand( char *pcWriteBuffer,
+                                size_t xWriteBufferLen,
+								const char *pcCommandString )
+{
+    //static BaseType_t state = 0;
+    char buffer[128+32];
+    char *path = "0:/";
+
+    //if (!state){
+        // Abre o diretório
+        res = f_opendir(&dir, path);
+        if (res == FR_OK) {
+            int len = sprintf(buffer, "Conteúdo do diretório: %s\n", path);
+            strcpy(pcWriteBuffer, buffer);
+            pcWriteBuffer += len;
+            memset(buffer, 0, 64);
+            len = sprintf(buffer, "----------------------------------------\n");
+            strcpy(pcWriteBuffer, buffer);
+            pcWriteBuffer += len;
+            memset(buffer, 0, 64);
+
+            while (1) {
+                        // Lê o próximo item do diretório
+                        res = f_readdir(&dir, &fno);
+
+                        // Se houve erro ou chegou ao fim do diretório
+                        if (res != FR_OK || fno.fname[0] == 0) break;
+
+                        // Verifica se é diretório ou arquivo
+                        if (fno.fattrib & AM_DIR) {
+                        	len = sprintf(buffer, "[DIR]  %s/\n", fno.fname);
+                        } else {
+                        	len = sprintf(buffer, "[FILE] %s (%lu bytes)\n", fno.fname, fno.fsize);
+                        }
+                        strcpy(pcWriteBuffer, buffer);
+                        pcWriteBuffer += len;
+                        memset(buffer, 0, 64);
+            }
+
+            len = sprintf(buffer, "----------------------------------------\n");
+            strcpy(pcWriteBuffer, buffer);
+			f_closedir(&dir);
+		} else {
+			sprintf(buffer, "Erro ao abrir diretório: %d\n", res);
+			strcpy(pcWriteBuffer, buffer);
+		}
+
+        //return pdTRUE;
+        return pdFALSE;
+        /*
+    }else{
+        state = 0;
+        strcpy(pcWriteBuffer, "\n\r");
+        return pdFALSE;
+    }
+    */
+}
+
 static const CLI_Command_Definition_t xTasksCommand =
 {
     "tasks",
 	"tasks: Lists all the installed tasks\r\n\r\n",
 	prvTaskStatsCommand,
+    0
+};
+
+static const CLI_Command_Definition_t xLsCommand =
+{
+    "ls",
+	"ls: List files into the SD card\r\n\r\n",
+	prvLSCommand,
     0
 };
 
@@ -348,6 +418,7 @@ static void cdc_task(void *param){
 	static char pcOutputString[ MAX_OUTPUT_LENGTH ], pcInputString[ MAX_INPUT_LENGTH ];
 
 	FreeRTOS_CLIRegisterCommand( &xTasksCommand );
+	FreeRTOS_CLIRegisterCommand( &xLsCommand );
 
 	cdc_rx_queue = xQueueCreate(8, sizeof(uint32_t));
 	cdc_tx_sem = xSemaphoreCreateBinary();

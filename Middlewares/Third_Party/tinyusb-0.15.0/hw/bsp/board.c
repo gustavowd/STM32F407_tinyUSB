@@ -141,7 +141,7 @@ TU_ATTR_USED int sys_read (int fhdl, char *buf, size_t count)
 TU_ATTR_USED int sys_write (int fhdl, const void *buf, size_t count)
 {
   (void) fhdl;
-  return board_uart_write(buf, (int) count);
+  return 0;//board_uart_write(buf, (int) count);
 }
 
 TU_ATTR_USED int sys_read (int fhdl, char *buf, size_t count)
