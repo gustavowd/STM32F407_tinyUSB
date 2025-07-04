@@ -10,8 +10,8 @@
 
 extern I2S_HandleTypeDef hi2s2;
 
-int32_t sampleBuffer[MIC_SAMPLES_PER_PACKET * 2];      // 7680 bytes (*2 because samples are 64 bit)
-int16_t processBuffer[MIC_SAMPLES_PER_PACKET >> 1];    // 960 bytes (because process each half 16 bits buffer)
+int32_t sampleBuffer[MIC_SAMPLES_PER_PACKET * 2];      // 38400 bytes (*2 because samples are 64 bit)
+int16_t processBuffer[MIC_SAMPLES_PER_PACKET >> 1];    // 4800 bytes (because process each half 16 bits buffer)
 QueueHandle_t	  mic_read_queue;
 
 uint32_t mic_init(void){
@@ -55,7 +55,7 @@ uint32_t mic_read(void){
 		//int16_t sample = (data_in[0] & 0xfffffffe) | (rand() & 1);
 		int16_t sample = (int16_t)data_in[0];
 
-		*dest++ = sample;     // left channel has data
+		*dest++ = sample * 10;     // left channel has data (20 dB gain)
 		//*dest++ = sample;     // right channel is duplicated from the left
 		data_in += 2;
 		bytes_read += 2;
@@ -105,6 +105,16 @@ void record_wav(char *filename, uint32_t rec_time)
 
     // Start recording
     mic_start();
+
+    // remove initial noise
+    uint32_t noise_time = MIC_BYTE_RATE / 5;	// 200 ms
+    while (flash_wr_size < noise_time) {
+        // Read the RAW samples from the microphone
+        bytes_read = mic_read();
+		flash_wr_size += bytes_read;
+    }
+
+    flash_wr_size = 0;
     while (flash_wr_size < flash_rec_time) {
         // Read the RAW samples from the microphone
         //TickType_t start = xTaskGetTickCount();
