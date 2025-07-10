@@ -27,6 +27,7 @@
 #include "tusb.h"
 #include "microphone.h"
 #include "FreeRTOS_CLI.h"
+#include "filesystem_shell_commands.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -323,7 +324,7 @@ static BaseType_t prvTaskStatsCommand( char *pcWriteBuffer,
 
 
 FRESULT res;
-DIR dir;
+DIR directory;
 FILINFO fno;
 static BaseType_t prvLSCommand( char *pcWriteBuffer,
                                 size_t xWriteBufferLen,
@@ -335,7 +336,7 @@ static BaseType_t prvLSCommand( char *pcWriteBuffer,
 
     //if (!state){
         // Abre o diretório
-        res = f_opendir(&dir, path);
+        res = f_opendir(&directory, path);
         if (res == FR_OK) {
             int len = sprintf(buffer, "Conteúdo do diretório: %s\n", path);
             strcpy(pcWriteBuffer, buffer);
@@ -348,7 +349,7 @@ static BaseType_t prvLSCommand( char *pcWriteBuffer,
 
             while (1) {
                         // Lê o próximo item do diretório
-                        res = f_readdir(&dir, &fno);
+                        res = f_readdir(&directory, &fno);
 
                         // Se houve erro ou chegou ao fim do diretório
                         if (res != FR_OK || fno.fname[0] == 0) break;
@@ -366,7 +367,7 @@ static BaseType_t prvLSCommand( char *pcWriteBuffer,
 
             len = sprintf(buffer, "----------------------------------------\n");
             strcpy(pcWriteBuffer, buffer);
-			f_closedir(&dir);
+			f_closedir(&directory);
 		} else {
 			sprintf(buffer, "Erro ao abrir diretório: %d\n", res);
 			strcpy(pcWriteBuffer, buffer);
@@ -393,8 +394,8 @@ static const CLI_Command_Definition_t xTasksCommand =
 
 static const CLI_Command_Definition_t xLsCommand =
 {
-    "ls",
-	"ls: List files into the SD card\r\n\r\n",
+    "ls2",
+	"ls2: List files into the SD card\r\n\r\n",
 	prvLSCommand,
     0
 };
@@ -419,6 +420,7 @@ static void cdc_task(void *param){
 
 	FreeRTOS_CLIRegisterCommand( &xTasksCommand );
 	FreeRTOS_CLIRegisterCommand( &xLsCommand );
+	install_fs_shell_commands();
 
 	cdc_rx_queue = xQueueCreate(8, sizeof(uint32_t));
 	cdc_tx_sem = xSemaphoreCreateBinary();
